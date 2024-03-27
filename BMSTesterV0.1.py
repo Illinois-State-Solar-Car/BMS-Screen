@@ -1,7 +1,7 @@
 #testing code to mimic BMS data being sent to the BMS driver display screen
 #TESTING PURPOSES ONLY
 #gets random data and sends it using canbus to be displayed by the motor screen
-#last worked on: 3/24/2024
+#last worked on: 3/25/2024
 #Mason Myre
 
 
@@ -49,14 +49,23 @@ avgVolt = int(3.3423 * 1000)
 highCellNum = 12
 lowCellNum = 8
 
+useRandom = True
+
 while True:
 
     #Constructor for the Message object(packing two floats(%,maxrpm))
     #send fake voltage and current data
     
+    if(useRandom):
+        lowVolt = round(random.uniform(3.1, 3.3), 4) * 1000
+        highVolt = round(random.uniform(3.4, 3.7), 4) * 1000
+        highTemp = round(random.uniform(24, 28), 0)
+        amps = round(random.uniform(-5, 17), 1) * 10
+        voltage = round(random.uniform(109, 117), 1) * 10
+
 
     #this is different than what is on the teams but the teams is wrong
-    message = Message(id=0x6B0, data=struct.pack('<HHHH', packAmpHours, amps, summedVoltage, voltage))
+    message = Message(id=0x6B0, data=struct.pack('<hhhh', packAmpHours, amps, summedVoltage, voltage))
     send_success = mcp.send(message)
     print(send_success)
     
@@ -67,22 +76,6 @@ while True:
     message = Message(id=0x6B2, data=struct.pack('HHHBB', highVolt, lowVolt, avgVolt, highCellNum, lowCellNum))
     print(send_success)
     print()
-    
-    '''
-    rpm = round(random.uniform(0,650), 2)
-    curr = round(random.uniform(0,69), 2)
-    message = Message(id=0x402, data=struct.pack('<ff',rpm, curr), extended=False)
-    send_success = mcp.send(message)
 
-    motorTemp = round(random.uniform(10,85),2)
-    heatsinkTemp = round(random.uniform(10,85),2)
-    message = Message(id=0x40B, data=struct.pack('<ff',motorTemp, heatsinkTemp), extended=False)
-    send_success = mcp.send(message)
- 
-
-   # message = Message(id=0x40B, data=struct.pack('<IIII',0,0,0,0), extended=False)
-   # send_success = mcp.send(message)
-    
-    '''
     #send delay
     time.sleep(1)
