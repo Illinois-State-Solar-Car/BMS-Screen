@@ -1,8 +1,10 @@
 '''
 Code redo for the BMS Screen
-pleasework
+Updated 3/26/24
+Mason Myre
+
 '''
-#importss
+#imports
 import board
 import busio
 import math #not going to use this
@@ -100,7 +102,7 @@ def write_to_screen(a, b, c, t, sp):
     splash[sp] = text_group
 
 def _can_is_full():
-	mcp._unread_message_queue.clear()
+    mcp._unread_message_queue.clear()
 
 def send_error(bool, loc):
     if bool:
@@ -151,51 +153,64 @@ init_screen_writing(1, 0, 60, text)
 
 runtime = time.time()
 
+#our loop
 while True:
+    
+    #set up listener
+    with mcp.listen(timeout=0) as listener:
 
-	with mcp.listen(timeout=0) as listener:
+        #grab the number of messages we are waiting to receive
+        message_count = listener.in_waiting() 
+        if message_count > 300: #if unread messages is larger than 300
+            _can_is_full() #clear the queue
 
-		message_count = listener.in_waiting()
-		if message_count > 300:
-			_can_is_full()
+        next_message = listener.receive() #grab the next message
+        message_num = 0 #set a counter for how many messages are in the queue
 
-		next_message = listener.receive()
-		message_num = 0
+        while not next_message is None: #aka while we have another message to read
+            message_num += 1 #increase the queue counter
 
-		while not next message is None:
-			message_num += 1
+            #if we are getting current/voltage data
+            if next_message.id == 0x6B0:
+                holder = struct.unpack('<hhhh', next_message.data)
+                current = holder[1] * .1
+                voltage = holder[3] * .1
+                #print("Message From: {}: [Amps = {}; Volts = {}]".format(hex(next_message.id),current,voltage))
 
-			if next_message.id == 0x6B0:
-				holder = struct.unpack('<hhhh', next_message.data)
-				current = holder[1] * .1
-				voltage = holder[3] * .1
-                print("Message From: {}: [Amps = {}; Volts = {}]".format(hex(next_message.id),current,voltage))
-
-			if next_message.id == 0x6B1:
+            #if we are getting battery temp data
+            if next_message.id == 0x6B1:
                 #unpack and print the message
                 holder = struct.unpack('<hhhxx',next_message.data)
                 lowTemp = holder[0] 
                 highTemp = holder[1]
-                print("Message From: {}: [Low Temp = {}; High Temp = {}]".format(hex(next_message.id),lowTemp,highTemp))
+                #print("Message From: {}: [Low Temp = {}; High Temp = {}]".format(hex(next_message.id),lowTemp,highTemp))
 
-            if next_message == 0x6B2:
-                holder = struct.unpack('<HHHBB',next_message.data)
-                highVolt = holder[0] * .0001
-                lowVolt = holder[1] * .0001
+            #if we are getting voltage data
+            if next_message.id == 0x6B2:
+                holder = struct.unpack('<hhhbb',next_message.data)
+                highVolt = holder[0] * .001
+                lowVolt = holder[1] * .001
+                #print("Message From: {}: [Low Volt = {}; High Volt = {}]".format(hex(next_message.id), lowVolt, highVolt))
 
-            if next_message == 0x401:
+
+            if next_message.id == 0x401:
                 DCU_timeout = time.monotonic_ns() - prevDCU_time
                 prevDCU_time = time.monotonic_ns()
 
 
-
+            #write all the text to the screen
+            cur_text = "A:{:04.1f}".format(current)
+            write_to_screen(2, 3, 10, cur_text, -4)
+            
+            volt_text = "V:{:04.1f}".format(voltage)
+            write_to_screen(2, 3, 35, volt_text, -3)
+            
+            hlVolt_text = "LV: \n{:01.2f}\nHV: \n{:1.2f}".format(lowVolt, highVolt)
+            write_to_screen(1, 100, 5, hlVolt_text, -2)
+            
+            temp_text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
+            write_to_screen(1, 0, 60, temp_text, -1)
+            
             next_message = listener.receive()
-
-
-
-
-
-
-
-
-
+            
+            #hi
