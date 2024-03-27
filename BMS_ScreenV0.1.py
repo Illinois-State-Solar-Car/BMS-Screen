@@ -2,7 +2,7 @@
 Code redo for the BMS Screen
 pleasework
 '''
-#imports
+#importss
 import board
 import busio
 import math #not going to use this
