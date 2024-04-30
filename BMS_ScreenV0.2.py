@@ -101,7 +101,7 @@ splash.pop(-1)
 
 #draw amps label for the first time
 text = "A: {:04.1f}".format(current) #creating a string using format to display the information in desired format
-text_group = displayio.Group(scale = 2, x = 3; y = 10) #scale 2 because we want it to be kinda big, x and y are spacing
+text_group = displayio.Group(scale = 2,x = 3, y = 10) #scale 2 because we want it to be kinda big, x and y are spacing
 text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF) #define text modifiers
 text_group.append(text_area) #subgroup for text scaling 
 splash.append(text_group) #add it to be used later
@@ -116,14 +116,14 @@ splash.append(text_group)
 
 
 #draw low voltage and high voltage for the first time
-text = "LV: \n{:04.1f}\nHV: \n{:4.1f}".format(lowVolt, highVolt)
+text = "LV: \n{:04.1f}\nHV: \n{:04.1f}".format(lowVolt, highVolt)
 text_group = displayio.Group(scale = 1, x = 100, y = 5)
 text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF)
 text_group.append(text_area)
 splash.append(text_group)
 
 
-text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
+text = "HT: {:04.1f} LT: {:04.1f}".format(highTemp,lowTemp)
 text_group = displayio.Group(scale = 1, x = 0, y = 60) #the formatting on this looks kinda bad,
 text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF) #it still fits, but I might make some changes to make it look pretty
 text_group.append(text_area)
