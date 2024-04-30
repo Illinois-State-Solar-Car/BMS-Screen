@@ -38,6 +38,13 @@ lowVolt = 0
 amps = 0
 voltage = 0
 
+#stuff to help with displaying to screens
+cur_text = "A:{:04.1f}".format(current)
+volt_text = "V:{:04.1f}".format(voltage)
+hlVolt_text = "LV: \n{:01.2f}\nHV: \n{:1.2f}".format(lowVolt, highVolt)
+temp_text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
+
+
 
 #release displays and start the clock
 boot_time = time.monotonic()
@@ -187,8 +194,7 @@ while True:
 
         #print stuff out here
 
-        #write amperage datat to the screen
-        cur_text = "A:{:04.1f}".format(current)
+        #write amperage data to the screen
         text_group = displayio.Group(scale = 2, x = 3, y = 10)
         text_area = label.Label(terminalio.FONT, text = cur_text, color = 0xFFFFFF)
         text_group = append(text_area)
@@ -196,7 +202,6 @@ while True:
 
         
         #write pack voltage to the screen
-        volt_text = "V:{:04.1f}".format(voltage)
         text_group = displayio.Group(scale = 2, x = 3, y = 35)
         text_area = label.Label(terminalio.FONT, text = volt_text, color = 0xFFFFFF)
         text_group = append(text_area)
@@ -207,14 +212,12 @@ while True:
 
 
         #write the high/low voltage information to the screen
-        hlVolt_text = "LV: \n{:01.2f}\nHV: \n{:1.2f}".format(lowVolt, highVolt)
         text_group = displayio.Group(scale = 1, x = 100, y = 5)
         text_area = label.Label(terminalio.FONT, text = hlVolt_text, color = 0xFFFFFF)
         text_group = append(text_area)
         splash[-2] = text_group
 
         #write temperature data to the screen
-        temp_text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
         text_group = displayio.Group(scale = 1, x = 0, y = 60)
         text_area = label.Label(terminalio.FONT, text = temp_text, color = 0xFFFFFF)
         text_group = append(text_area)
@@ -234,6 +237,10 @@ while True:
                 current = holder[1] * .1
                 voltage = holder[3] * .1
                 #print("Message From: {}: [Amps = {}; Volts = {}]".format(hex(next_message.id),current,voltage))
+                cur_text = "A:{:04.1f}".format(current)#do the string building here in case we want to create a little warning for certain values
+                volt_text = "V:{:04.1f}".format(voltage) #like if voltage is getting too low or something
+
+
 
             #if we are getting battery temp data
             if next_message.id == 0x6B1:
@@ -242,6 +249,8 @@ while True:
                 lowTemp = holder[0] 
                 highTemp = holder[1]
                 #print("Message From: {}: [Low Temp = {}; High Temp = {}]".format(hex(next_message.id),lowTemp,highTemp))
+                temp_text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp) 
+
 
             #if we are getting voltage data
             if next_message.id == 0x6B2:
@@ -249,6 +258,7 @@ while True:
                 highVolt = holder[0] * .001
                 lowVolt = holder[1] * .001
                 #print("Message From: {}: [Low Volt = {}; High Volt = {}]".format(hex(next_message.id), lowVolt, highVolt))
+                hlVolt_text = "LV: \n{:01.2f}\nHV: \n{:1.2f}".format(lowVolt, highVolt)
 
 
             if next_message.id == 0x401:
