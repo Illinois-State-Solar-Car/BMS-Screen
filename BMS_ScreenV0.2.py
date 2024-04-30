@@ -1,7 +1,14 @@
 '''
 Code redo for the BMS Screen
-Updated 3/26/24
+Updated 4.30.24
+
 Mason Myre
+
+Update notes----
+Should be fast enough now
+Either that or it doesn't work at all
+So basically it's your average Hyundai
+huh the sun is coming up
 
 '''
 #imports
@@ -71,8 +78,8 @@ color_palette[0] =0x000000  # Black
 bg_sprite = displayio.TileGrid(color_bitmap, pixel_shader=color_palette, x=0, y=0)
 splash.append(bg_sprite)
 
-#draw the text label
-text = "SOLAR CAR ISU\nBMS SCREEN\n"
+#draw the text label on startup
+text = "SOLAR CAR ISU\nBMS SCREEN" #nice to know especially for testing
 text_area = label.Label(terminalio.FONT, text=text, color=0xFFFFFF)
 text_width = text_area.bounding_box[2] * FONTSCALE
 text_group = displayio.Group(
@@ -85,14 +92,41 @@ splash.append(text_group)
 time.sleep(2.5)
 splash.pop(-1)
 
+#draw amps label for the first time
+text = "A: {:04.1f}".format(current) #creating a string using format to display the information in desired format
+text_group = displayio.Group(scale = 2, x = 3; y = 10) #scale 2 because we want it to be kinda big, x and y are spacing
+text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF) #define text modifiers
+text_group.append(text_area) #subgroup for text scaling 
+splash.append(text_group) #add it to be used later
 
-#function creation area
-#writes to the screen the first time
-def init_screen_writing(a, b, c, t):
-    text_group = displayio.Group(scale=a, x=b, y=c)
-    text_area = label.Label(terminalio.FONT, text=t, color=0xFFFFFF) #black
-    text_group.append(text_area)
-    splash.append(text_group)
+
+#draw battery pack voltage label for the first time
+text = "V: {:04.1f}".format(voltage)
+text_group = displayio.Group(scale = 2, x = 3, y = 35)
+text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF)
+text_group.append(text_area)
+splash.append(text_group)
+
+
+#draw low voltage and high voltage for the first time
+text = "LV: \n{:04.1f}\nHV: \n{:4.1f}".format(lowVolt, highVolt)
+text_group = displayio.Group(scale = 1, x = 100, y = 5)
+text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF)
+text_group.append(text_area)
+splash.append(text_group)
+
+
+text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
+text_group = displayio.Group(scale = 1, x = 0, y = 60) #the formatting on this looks kinda bad,
+text_area = label.Label(terminalio.FONT, text = text, color = 0xFFFFFF) #it still fits, but I might make some changes to make it look pretty
+text_group.append(text_area)
+splash.append(text_group)
+
+# now that was a mess, and you might be thinking: 
+# "Mason, this looks worse than my IT168 code, are you sure we can't use a function and pass everything into there and it looks nice and simple?"
+# I tried and it was slower than a dodge neon trying to get up a mild incline
+# I have no clue, I changed nothing except put it into a function
+# Possibly function call stack, but given it's currently 5am and I haven't slept, I'm going to stop talking here at risk of sounding insane (too late)
 
 #writes to the screen every time after the first
 def write_to_screen(a, b, c, t, sp):
@@ -137,23 +171,10 @@ def draw_bms_error(fail_str):
         while True: #what does this do? nothing, we simply do nothing until the car is manually rebooted
             pass #pretty neat, huh?
 
-#print stuff as we initialize it
-text = "A: {:04.1f}".format(current)
-init_screen_writing(2, 3, 10, text)
-
-text = "V: {:04.1f}".format(voltage)
-init_screen_writing(2, 3, 35, text)
-
-text = "LV: \n{:04.1f}\nHV: \n{:4.1f}".format(lowVolt, highVolt)
-init_screen_writing(1, 100, 5, text)
-
-text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
-init_screen_writing(1, 0, 60, text)
-
 
 runtime = time.time()
 
-#our loop
+#our loop that runs while the car is running
 while True:
     
     #set up listener
@@ -164,6 +185,43 @@ while True:
         if message_count > 300: #if unread messages is larger than 300
             _can_is_full() #clear the queue
 
+        #print stuff out here
+
+        #write amperage datat to the screen
+        cur_text = "A:{:04.1f}".format(current)
+        text_group = displayio.Group(scale = 2, x = 3, y = 10)
+        text_area = label.Label(terminalio.FONT, text = cur_text, color = 0xFFFFFF)
+        text_group = append(text_area)
+        splash[-4] = text_group
+
+        
+        #write pack voltage to the screen
+        volt_text = "V:{:04.1f}".format(voltage)
+        text_group = displayio.Group(scale = 2, x = 3, y = 35)
+        text_area = label.Label(terminalio.FONT, text = volt_text, color = 0xFFFFFF)
+        text_group = append(text_area)
+        splash[-3] = text_group
+        #when other people speak multiple languages they're "a prodigy" or a "polyglot"
+        #when I do it, it's called "the bare minimum for comp sci majors"
+        #smh double standards
+
+
+        #write the high/low voltage information to the screen
+        hlVolt_text = "LV: \n{:01.2f}\nHV: \n{:1.2f}".format(lowVolt, highVolt)
+        text_group = displayio.Group(scale = 1, x = 100, y = 5)
+        text_area = label.Label(terminalio.FONT, text = hlVolt_text, color = 0xFFFFFF)
+        text_group = append(text_area)
+        splash[-2] = text_group
+
+        #write temperature data to the screen
+        temp_text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
+        text_group = displayio.Group(scale = 1, x = 0, y = 60)
+        text_area = label.Label(terminalio.FONT, text = temp_text, color = 0xFFFFFF)
+        text_group = append(text_area)
+        splash[-1] = text_group
+
+
+        
         next_message = listener.receive() #grab the next message
         message_num = 0 #set a counter for how many messages are in the queue
 
@@ -196,20 +254,6 @@ while True:
             if next_message.id == 0x401:
                 DCU_timeout = time.monotonic_ns() - prevDCU_time
                 prevDCU_time = time.monotonic_ns()
-
-
-            #write all the text to the screen
-            cur_text = "A:{:04.1f}".format(current)
-            write_to_screen(2, 3, 10, cur_text, -4)
-            
-            volt_text = "V:{:04.1f}".format(voltage)
-            write_to_screen(2, 3, 35, volt_text, -3)
-            
-            hlVolt_text = "LV: \n{:01.2f}\nHV: \n{:1.2f}".format(lowVolt, highVolt)
-            write_to_screen(1, 100, 5, hlVolt_text, -2)
-            
-            temp_text = "HT: {:04.1f} LT: {:4.1f}".format(highTemp,lowTemp)
-            write_to_screen(1, 0, 60, temp_text, -1)
             
             next_message = listener.receive()
             
