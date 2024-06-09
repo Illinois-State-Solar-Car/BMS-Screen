@@ -48,9 +48,9 @@ can_cs.switch_to_output()
 mcp = CAN(spi, can_cs, baudrate = 500000, crystal_freq = 16000000, silent = False,loopback = False)
 
 # Set up the OLED on the SPI Bus
-cs = board.GP22
-dc = board.GP23
-reset = board.GP21
+cs = board.GP20
+dc = board.GP10
+reset = board.GP19
 WIDTH = 128
 HEIGHT = 64
 BORDER = 0
